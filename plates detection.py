@@ -1,7 +1,3 @@
-!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-
 import numpy as np
 import sys
 if "Tkinter" not in sys.modules:
@@ -25,6 +21,7 @@ import argparse
 import mysql.connector
 import cv2
 from datetime import datetime
+from tkinter import ttk
 
 #import face_recognition
 
@@ -43,17 +40,17 @@ args = vars(ap.parse_args())
 
 class Test():
 
-    def __init__(self):
+    def _init_(self):
         
         self.root = Tk()
-        self.root.title('Number Plate Vision System')
+        self.root.title('VEHICLE NUMBER PLATE RECOGINITION SYSTEM')
         self.root.geometry('850x567+0+0')
         #self.root.attributes("-fullscreen", True)
 
 
 
         def Camera():
-            vid = askopenfilename(initialdir="C:/",filetypes =(("Video File", "*.mp4"),("All Files","*.*")),title = "Choose a file.")
+            vid = askopenfilename(initialdir="C:/",filetypes =(("Video File", ".mp4"),("All Files",".*")),title = "Choose a file.")
             stream = cv2.VideoCapture(vid)
             #print(cv2.isOpened())
             writer = None
@@ -117,22 +114,47 @@ class Test():
                 writer.release()   
 
         def get_data():
+            
+            
             mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            port="3306",
-            password="sakshi123",
-            database="v_prj"
+                host="localhost",
+                user="root",
+                port="3306",
+                password="ASA#60kjk_@",
+                database="v_prj"
             ) 
             mycursor = mydb.cursor()
-            mycursor.execute("SELECT * FROM vehicles order by id desc limit 20")
+            mycursor.execute("SELECT * FROM number_plate order by id desc limit 20")
             myresult = mycursor.fetchall()
-            for x in myresult:
-                print(x)
+            
+        #     # # Create a popup window to display data
+            top0 = tk.Toplevel()
+            top0.title("Number Plates Database")
+            top0.geometry("400x300+440+200")
+            
+        #    # Create a treeview widget
+           # Create a treeview widget
+            tree = ttk.Treeview(top0)
+            tree["columns"] = ("numberplate", "timestamp")
+            tree.heading("#0", text="ID")
+            tree.heading("numberplate", text="Number Plate")
+            tree.heading("timestamp", text="Timestamp")
+            tree.pack(expand=True, fill=tk.BOTH)
+
+            tree.column("#0", width=50)  # Adjust the width of the ID column
+            tree.pack(expand=True, fill=tk.BOTH)
+
+        #     # Insert data into the treeview
+            for i, row in enumerate(myresult, start=1):
+                tree.insert("", "end", text=row[0], values=(row[1], row[2]))
+
+        #     # Update the width of the numberplate and timestamp columns
+            tree.column("numberplate", width=150)  # Adjust width as needed
+            tree.column("timestamp", width=150)  # Adjust width as needed
                  
         def select_image():
 
-            name = askopenfilename(initialdir="C:/Users/Sakshi/Downloads/Vehicle-Plate-Recognition-mainzip12/back.png",filetypes =(("Image File", "*.jpeg"),("All Files","*.*")),title = "Choose a file.")
+            name = askopenfilename(initialdir="C:/Users/NITIN/Documents/platespotter-1/back.png",filetypes =(("Image File", ".jpeg"),("All Files",".*")),title = "Choose a file.")
 
             image = cv2.imread(name)
 
@@ -168,7 +190,7 @@ class Test():
             host="localhost",
             user="root",
             port="3306",
-            password="sakshi123",
+            password="ASA#60kjk_@",
             database="v_prj"
             )
             from datetime import datetime
@@ -180,9 +202,9 @@ class Test():
             datetime = datetime.now()
  
             print(mydb)
-            #INSERT INTO `v_prj`.`number_plate` (`id`, `numberplate`, `timestamp`) VALUES ('', 'hjgf', 'kjhg');
+            #INSERT INTO v_prj.number_plate (id, numberplate, timestamp) VALUES ('', 'hjgf', 'kjhg');
             mycursor = mydb.cursor() 
-            sql = "INSERT INTO number_plate(`numberplate`, `timestamp`) VALUES (%s, %s)"
+            sql = "INSERT INTO number_plate(numberplate, timestamp) VALUES (%s, %s)"
             val = ( plate, datetime)
             mycursor.execute(sql, val)
             mydb.commit()
@@ -213,7 +235,7 @@ class Test():
             frameWidth = 640    # Frame Width
             frameHeight = 480   # Frame Height
 
-            plateCascade = cv2.CascadeClassifier("C:/Users/Sakshi/Downloads/Number_Plate_Detection-master/Number_Plate_Detection-master/haarcascade_russian_plate_number.xml")
+            plateCascade = cv2.CascadeClassifier("C:/Users/NITIN/Documents/platespotter-1/haarcascade_russian_plate_number.xml")
             minArea = 500
 
             cap = cv2.VideoCapture(0)
@@ -253,15 +275,9 @@ class Test():
             cv2.destroyAllWindows()     
              
 
-
-
-        
-
-
-
         
         C = Canvas(self.root, bg="blue", height=850, width=567)
-        filename = PhotoImage(file = "C:/Users/Sakshi/Downloads/Vehicle-Plate-Recognition-mainzip12/back.png")
+        filename = PhotoImage(file = "C:\Users\NITIN\Documents\platespotter-1\back.png")
         C.create_image(0, 0, image=filename, anchor='nw')
 
         
@@ -284,11 +300,11 @@ class Test():
         
         button3 = Button(C, text = "View Data", font=('Times', '14', 'bold italic'),borderwidth=4, highlightthickness=4, highlightcolor="#37d3ff", highlightbackground="#37d3ff",relief=RAISED, command =get_data)
         button3.configure(width=15, activebackground = "#33B5E5")
-        button3.place(x=250, y=460)
+        button3.place(x=180, y=460)
 
         button4 = Button(C, text = "Webcam Video", font=('Times', '14', 'bold italic'),borderwidth=4, highlightthickness=4, highlightcolor="#37d3ff", highlightbackground="#37d3ff",relief=RAISED, command =live_cam)
         button4.configure(width=15, activebackground = "#33B5E5")
-        button4.place(x=340, y=100)
+        button4.place(x=580, y=120)
         
 
 
