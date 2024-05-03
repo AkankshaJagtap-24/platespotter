@@ -144,7 +144,7 @@ class Test():
             plate = (plate.replace("\\",""))
 
             print(plate)
-            # print("Ak is mad")
+            
             mydb = mysql.connector.connect(
             host="localhost",
             user="root",
