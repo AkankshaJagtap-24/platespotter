@@ -4,7 +4,7 @@ import requests
 regions = ['in']
 
 # Provide the path to the image file
-image_path = 'C:/Users/NITIN/Documents/Vehicle-Plate-Recognition-main/cut.jpg'
+image_path = 'C:/Users/NITIN/Documents/platespotter-1/cut.jpg'
 
 # Read the image file as binary data
 with open(image_path, 'rb') as fp:
