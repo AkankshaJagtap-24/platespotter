@@ -46,7 +46,7 @@ class Test():
     def __init__(self):
         
         self.root = Tk()
-        self.root.title('Lisecnce Plate Vision System')
+        self.root.title('Number Plate Vision System')
         self.root.geometry('850x567+0+0')
         #self.root.attributes("-fullscreen", True)
 
