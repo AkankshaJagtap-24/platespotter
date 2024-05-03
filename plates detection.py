@@ -1,5 +1,3 @@
-
-# -*- coding: utf-8 -*-
 import numpy as np
 import sys
 if "Tkinter" not in sys.modules:
@@ -23,6 +21,7 @@ import argparse
 import mysql.connector
 import cv2
 from datetime import datetime
+from tkinter import ttk
 
 #import face_recognition
 
@@ -41,28 +40,94 @@ args = vars(ap.parse_args())
 
 class Test():
 
-    def __init__(self):
+    def _init_(self):
         
         self.root = Tk()
         self.root.title('VEHICLE NUMBER PLATE RECOGINITION SYSTEM')
         self.root.geometry('850x567+0+0')
         #self.root.attributes("-fullscreen", True)
 
+
+
+        def Camera():
+            vid = askopenfilename(initialdir="C:/",filetypes =(("Video File", ".mp4"),("All Files",".*")),title = "Choose a file.")
+            stream = cv2.VideoCapture(vid)
+            #print(cv2.isOpened())
+            writer = None
+            while True:
+                (grabbed, frame) = stream.read()
+                if not grabbed:
+                    break
+                rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                rgb = imutils.resize(frame, width=750)
+                r = frame.shape[1] / float(rgb.shape[1])
+
+                boxes = face_recognition.face_locations(rgb,model='hog')
+                encodings = face_recognition.face_encodings(rgb, boxes)
+                names = []
+
+                for encoding in encodings:
+                    matches = face_recognition.compare_faces(data["encodings"],encoding)
+                    name = "Unknown"
+                    if True in matches:
+                        matchedIndxs = [i for (i, b) in enumerate(matches) if b]
+                        counts = {}
+                        for i in matchedIndxs:
+                            name = data["names"][i]
+                            counts[name] = counts.get(name, 0) + 1
+
+                        name = max(counts, key=counts.get)
+                        
+                    names.append(name)
+
+
+                for ((top, right, bottom, left), name) in zip(boxes, names):
+                    top = int(top * r)
+                    right = int(right * r)
+                    bottom = int(bottom * r)
+                    left = int(left * r)
+
+                    cv2.rectangle(frame, (left, top), (right, bottom),(0, 255, 0), 2)
+                    y = top - 15 if top - 15 > 15 else top + 15
+                    cv2.putText(frame, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,0.75, (0, 255, 0), 2)
+
+                if writer is None and args["output"] is not None:
+                    fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+                    writer = cv2.VideoWriter(args["output"], fourcc, 24,(frame.shape[1], frame.shape[0]), True)
+
+                
+                if writer is not None:
+                    writer.write(frame)
+
+                if args["display"] > 0:
+                    cv2.imshow("Press Q to Quit Window", frame)
+                    key = cv2.waitKey(1) & 0xFF
+
+                    if key == ord("q"):
+                        cv2.destroyAllWindows()
+                        break
+                    
+
+            stream.release()
+            
+            if writer is not None:
+                writer.release()   
+
         def get_data():
+            
+            
             mydb = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            port="3306",
-            password="ASA#60kjk_@",
-            database="v_prj"
+                host="localhost",
+                user="root",
+                port="3306",
+                password="ASA#60kjk_@",
+                database="v_prj"
             ) 
             mycursor = mydb.cursor()
-            mycursor.execute("SELECT * FROM vehicles order by id desc limit 20")
+            mycursor.execute("SELECT * FROM number_plate order by id desc limit 20")
             myresult = mycursor.fetchall()
-            # for x in myresult:
-              #  print(x)
-
-             # Create a popup window to display data
+            
+        #     # # Create a popup window to display data
             top0 = tk.Toplevel()
             top0.title("Number Plates Database")
             top0.geometry("400x300+440+200")
@@ -86,31 +151,10 @@ class Test():
         #     # Update the width of the numberplate and timestamp columns
             tree.column("numberplate", width=150)  # Adjust width as needed
             tree.column("timestamp", width=150)  # Adjust width as needed
- # this want to share with her and above get data 
-        def clear_data():
-            try:
-                mydb = mysql.connector.connect(
-                    host="localhost",
-                    user="root",
-                    port="3306",
-                    password="ASA#60kjk_@",
-                    database="v_prj"
-                )
-                mycursor = mydb.cursor()
-                mycursor.execute("DELETE FROM number_plate")
-                mydb.commit()
-                print("Data cleared successfully!")
-            except mysql.connector.Error as error:
-                print("Error clearing data:", error)
-            finally:
-                if mydb.is_connected():
-                    mycursor.close()
-                    mydb.close()
-
                  
         def select_image():
 
-            name = askopenfilename(initialdir="C:/Users/NITIN/Documents/platespotter-1/back.png",filetypes =(("Image File", "*.jpeg"),("All Files","*.*")),title = "Choose a file.")
+            name = askopenfilename(initialdir="C:/Users/NITIN/Documents/platespotter-1/back.png",filetypes =(("Image File", ".jpeg"),("All Files",".*")),title = "Choose a file.")
 
             image = cv2.imread(name)
 
@@ -133,6 +177,9 @@ class Test():
            
             plate= (b[29:35])
             
+
+
+            
             
             plate = (plate.replace("// ",""))
 
@@ -146,18 +193,18 @@ class Test():
             password="ASA#60kjk_@",
             database="v_prj"
             )
-            #from datetime import datetime
-           # now = datetime.now()  
-            #datetime = now.strftime("%Y-%m-d %H:%M:%S")
+            from datetime import datetime
+            now = datetime.now()  
+            datetime = now.strftime("%Y-%m-d %H:%M:%S")
 
             from datetime import datetime
 
             datetime = datetime.now()
  
-            #print(mydb)
-            #INSERT INTO `v_prj`.`number_plate` (`id`, `numberplate`, `timestamp`) VALUES ('', 'hjgf', 'kjhg');
+            print(mydb)
+            #INSERT INTO v_prj.number_plate (id, numberplate, timestamp) VALUES ('', 'hjgf', 'kjhg');
             mycursor = mydb.cursor() 
-            sql = "INSERT INTO number_plate(`numberplate`, `timestamp`) VALUES (%s, %s)"
+            sql = "INSERT INTO number_plate(numberplate, timestamp) VALUES (%s, %s)"
             val = ( plate, datetime)
             mycursor.execute(sql, val)
             mydb.commit()
@@ -226,9 +273,11 @@ class Test():
                       count += 1
             cap.release()
             cv2.destroyAllWindows()     
-         
+             
+
+        
         C = Canvas(self.root, bg="blue", height=850, width=567)
-        filename = PhotoImage(file = "C:/Users/NITIN/Documents/platespotter-1/back.png")
+        filename = PhotoImage(file = "C:\Users\NITIN\Documents\platespotter-1\back.png")
         C.create_image(0, 0, image=filename, anchor='nw')
 
         
@@ -251,11 +300,11 @@ class Test():
         
         button3 = Button(C, text = "View Data", font=('Times', '14', 'bold italic'),borderwidth=4, highlightthickness=4, highlightcolor="#37d3ff", highlightbackground="#37d3ff",relief=RAISED, command =get_data)
         button3.configure(width=15, activebackground = "#33B5E5")
-        button3.place(x=250, y=460)
+        button3.place(x=180, y=460)
 
         button4 = Button(C, text = "Webcam Video", font=('Times', '14', 'bold italic'),borderwidth=4, highlightthickness=4, highlightcolor="#37d3ff", highlightbackground="#37d3ff",relief=RAISED, command =live_cam)
         button4.configure(width=15, activebackground = "#33B5E5")
-        button4.place(x=340, y=100)
+        button4.place(x=580, y=120)
         
 
 
